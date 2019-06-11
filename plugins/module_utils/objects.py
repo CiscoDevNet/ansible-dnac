@@ -8,6 +8,8 @@ from collections import MutableMapping
 
 from ansible.module_utils.six import iteritems, iterkeys
 
+from ansible_collections.ciscodevnet.ansible_dnac.plugins.module_utils.helpers import first
+
 ApiObject = lambda o: namedtuple('ApiObject', o.keys())(**o)
 ConfigObject = lambda o, item: namedtuple('ConfigObject', iterkeys(o))(**dict([(k, item[k]) for k in iterkeys(o)]))
 
@@ -15,10 +17,7 @@ Operations = namedtuple('Operations', ('post', 'put', 'delete'))
 Updates = namedtuple('Updates', ('post', 'put', 'delete'))
 
 MappedKey = namedtuple('Map', ('key', 'mapped_key', 'transform'))
-
 MatchAttr = namedtuple('MatchAttr', ('configattr', 'stateattr'))
-
-first = lambda objects: objects[0] if objects else None
 
 
 class KeyMap(MutableMapping):
@@ -101,7 +100,6 @@ def serialize(o, mapping=None):
                 obj[key] = value
 
         return obj or o
-
 
 
 def mapped_key(key, mapped_key=None, transform=None):
