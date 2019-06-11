@@ -51,8 +51,6 @@ def main():
 
     result = {'changed': False}
 
-    getter = '/dna/intent/api/v1/network-device'
-
     resp = connection.get('/dna/intent/api/v1/network-device')
     resp = module.from_json(resp)
     resp = resp['response']
