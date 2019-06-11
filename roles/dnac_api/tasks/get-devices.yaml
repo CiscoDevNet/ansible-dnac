@@ -1,0 +1,4 @@
+---
+- name: get-devices
+  ciscodevnet.ansible_dnac.api:
+    url: "/dna/intent/api/v1/network-device"

@@ -1,0 +1,5 @@
+---
+# tasks file for dnac_api
+#
+- include_tasks: "{{ endpoint }}.yaml"
+

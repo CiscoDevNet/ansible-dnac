@@ -1,0 +1,4 @@
+---
+- name: get-global-cli-creds
+  ciscodevnet.ansible_dnac.api:
+    url: "/api/v1/global-credential?credentialSubType=CLI"

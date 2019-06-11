@@ -1,0 +1,4 @@
+---
+- name: get-topology
+  ciscodevnet.ansible_dnac.api:
+    url: "/dna/intent/api/v1/topology/site-topology"

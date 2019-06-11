@@ -1,0 +1,4 @@
+---
+- name: gt-snmp-property
+  ciscodevnet.ansible_dnac.api:
+    url: "/dna/intent/api/v1/snmp-property"

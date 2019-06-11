@@ -1,0 +1,4 @@
+---
+- name: get-vlan-names
+  ciscodevnet.ansible_dnac.api:
+    url: "/dna/intent/api/v1/topology/vlan/vlan-names"

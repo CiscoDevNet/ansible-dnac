@@ -1,0 +1,4 @@
+---
+- name: get-templates
+  ciscodevnet.ansible_dnac.api:
+    url: "/api/v1/template-programmer/project"

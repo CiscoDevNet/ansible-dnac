@@ -1,0 +1,6 @@
+---
+- name: get-sites
+  ciscodevnet.ansible_dnac.api:
+    url: "/dna/intent/api/v1/site-health"
+    body:
+      timestamp: "{{ ansible_date_time.epoch }}"
