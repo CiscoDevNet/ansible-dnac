@@ -17,7 +17,7 @@ Operations = namedtuple('Operations', ('post', 'put', 'delete'))
 Updates = namedtuple('Updates', ('post', 'put', 'delete'))
 
 MappedKey = namedtuple('Map', ('key', 'mapped_key', 'transform'))
-MatchAttr = namedtuple('MatchAttr', ('configattr', 'stateattr'))
+MatchAttr = namedtuple('MatchAttr', ('configattr', 'apiattr'))
 
 
 class KeyMap(MutableMapping):
@@ -64,8 +64,8 @@ def match(obj, collection, fields):
     for key in fields:
         if isinstance(key, MatchAttr):
             configattr = key.configattr
-            stateattr = key.stateattr
-            tmpobj = [item for item in objects if getattr(obj, configattr) == getattr(item, stateattr)]
+            apiattr = key.apiattr
+            tmpobj = [item for item in objects if getattr(obj, configattr) == getattr(item, apiattr)]
         else:
             tmpobj = [item for item in objects if getattr(obj, key) == getattr(item, key)]
 
@@ -106,5 +106,5 @@ def mapped_key(key, mapped_key=None, transform=None):
     mapped_key = mapped_key or key
     return MappedKey(key, mapped_key, transform)
 
-def matchattr(configattr, stateattr=None):
-    return MatchAttr(configattr, (stateattr or configattr))
+def matchattr(configattr, apiattr=None):
+    return MatchAttr(configattr, (apiattr or configattr))
