@@ -1,0 +1,22 @@
+---
+- name: install the local collection
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+    collections_home: ~/.ansible/collections/ansible_collections
+    collections_org: ciscodevnet
+    collections_name: ansible_dnac
+
+  tasks:
+    - name: create the org collections folder (if necessary)
+      file:
+        path: "{{ collections_home }}/{{ collections_org }}"
+        state: directory
+
+    - name: link the current collection to the collections folder
+      file:
+        src:  "{{ playbook_dir | parentdir }}"
+        path: "{{ collections_home }}/{{ collections_org }}/{{ collections_name }}"
+        state: link

@@ -1,0 +1,28 @@
+---
+- name: install the local collection
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+    collections_home: ~/.ansible/collections/ansible_collections
+    collections_org: ciscodevnet
+    collections_name: ansible_dnac
+
+  tasks:
+    - name: unlink the current collection to the collections folder
+      file:
+        path: "{{ collections_home }}/{{ collections_org }}/{{ collections_name }}"
+        state: absent
+
+    - name: check if the org path is empty
+      find:
+        paths: "{{ collections_home }}/{{ collections_org }}"
+        file_type: any
+      register: path_listing
+
+    - name: remove the org collections folder (if necessary)
+      file:
+        path: "{{ collections_home }}/{{ collections_org }}"
+        state: absent
+      when: path_listing.matched == 0
