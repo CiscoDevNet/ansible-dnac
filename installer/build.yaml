@@ -1,0 +1,79 @@
+---
+- name: transform the collection into a legacy role
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: remove the build folder
+      file:
+        path: "{{ playbook_dir | parentdir }}/build"
+        state: absent
+
+    - name: create temp directory for build
+      tempfile:
+        state: directory
+      register: tmp_path
+
+    - set_fact:
+        role_path: "{{ tmp_path.path }}/dnac"
+
+    - name: get the role_path
+      stat:
+        path: "{{ role_path }}"
+      register: results
+
+    - name: initialize the role if it doesn't already exist
+      command: "ansible-galaxy init {{ role_path }}"
+      when: results.stat.exists == False
+
+    - name: create the library folder if it doesn't exist
+      file:
+        path: "{{ role_path }}/library"
+        state: directory
+
+    - name: get the list of modules in the plugins folder
+      find:
+        paths: "{{ playbook_dir | parentdir }}/plugins/modules"
+        patterns: "*.py"
+      register: results
+
+    - name: link modules to library in role folder
+      file:
+        src: "{{ item.path }}"
+        path: "{{ role_path }}/library/dnac_{{ item.path | basename }}"
+        state: link
+      with_items: "{{ results.files }}"
+
+    - name: link module_utils folder to the role
+      file:
+        src: "{{ playbook_dir | parentdir }}/plugins/module_utils"
+        path: "{{ role_path }}/module_utils"
+        state: link
+
+    - name: link httpapi_plugins folder to the role
+      file:
+        src: "{{ playbook_dir | parentdir }}/plugins/httpapi"
+        path: "{{ role_path }}/httpapi_plugins"
+        state: link
+
+    - name: copy the README file into the role
+      copy:
+        src: "{{ playbook_dir }}/files/README.md"
+        dest: "{{ role_path }}/README.md"
+
+    - name: create build directory
+      file:
+        path: "{{ playbook_dir | parentdir }}/build"
+        state: directory
+
+    - name: create installable tarball
+      archive:
+        path: "{{ role_path }}"
+        dest: "{{ playbook_dir | parentdir }}/build/ciscodevnet.dnac"
+        format: tar
+
+    - name: remove the temp directory
+      file:
+        path: "{{ tmp_path.path }}"
+        state: absent
