@@ -12,7 +12,25 @@ from ansible.module_utils.connection import Connection
 from ansible.module_utils.six import iteritems
 
 from ansible_collections.ciscodevnet.ansible_dnac.plugins.module_utils import objects
-from ansible_collections.ciscodevnet.ansible_dnac.pluigns.module_utils import devices
+
+DEVICE_TYPE = {
+    'network': 'NETWORK_DEVICE'
+}
+
+
+CONFIG_TO_API_MAP = objects.KeyMap(
+    ('address', 'ipAddress', lambda x: [x]),
+    ('enable_password', 'enablePassword'),
+    ('transport', 'cliTransport'),
+    ('snmp_ro_community', 'snmpROCommunity'),
+    ('snmp_rw_community', 'snmpRWCommunity'),
+    ('snmp_retries', 'snmpRetries'),
+    ('snmp_timeout', 'snmpTimeout'),
+    ('snmp_version', 'snmpVersion'),
+    ('username', 'userName'),
+    ('password',),
+    ('type', 'type', lambda x: DEVICE_TYPE[x])
+)
 
 
 def main():
@@ -100,18 +118,6 @@ def main():
             # add config_object to the edit change set
             elif matched_object:
                 module.warn("Unable to detect if any device attributes have changed")
-            #    obj = {}
-            #    for field in config_object._fields:
-            #        value = getattr(config_object, field)
-            #        if value is not None and value != getattr(matched_object, field):
-            #            obj[key] = value
-
-            #    if obj:
-            #        for key, value in iteritems(config_spec):
-            #            if value['required'] is True and key not in obj:
-            #                obj[key] = value
-
-            #        operations.put.append(objects.ConfigObject(obj, obj))
 
     url = '/dna/intent/api/v1/network-device'
     result.update({'operation': dict(added=[], removed=[], modified='not supported')})
@@ -122,7 +128,15 @@ def main():
             if method == 'post':
                 if not module.check_mode:
                     for item in items:
-                        connection.post(url, data=objects.serialize(item, mapping=devices.CONFIG_TO_API_MAP))
+                        data = objects.serialize(item, CONFIG_TO_API_MAP)
+
+                        if data['username'] and not data['password']:
+                            module.fail_json(msg="missing required attribute `password` when `username` is specified")
+                        elif data['password'] and not data['username']:
+                            module.fail_json(msg="missing required attribute `username` when `password` is specified")
+
+                        validate(module, data)
+                        connection.post(url, data=data)
                 result['changed'] = True
                 result['operation']['added'].append(item.address)
 
