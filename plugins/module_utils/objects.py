@@ -61,6 +61,7 @@ def create(obj, item, mapping=None):
 
 def match(obj, collection, fields):
     objects = list(collection)
+
     for key in fields:
         if isinstance(key, MatchAttr):
             configattr = key.configattr
@@ -97,7 +98,8 @@ def serialize(o, mapping=None):
                 key = getattr(mapped_key, 'mapped_key', key)
                 if mapped_key.transform:
                     value = mapped_key.transform(value)
-                obj[key] = value
+                if value is not None:
+                    obj[key] = value
 
         return obj or o
 
@@ -105,6 +107,7 @@ def serialize(o, mapping=None):
 def mapped_key(key, mapped_key=None, transform=None):
     mapped_key = mapped_key or key
     return MappedKey(key, mapped_key, transform)
+
 
 def matchattr(configattr, apiattr=None):
     return MatchAttr(configattr, (apiattr or configattr))

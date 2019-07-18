@@ -18,7 +18,9 @@ CONFIG_TO_API_MAP = objects.KeyMap(
     ('password',),
     ('enable_password', 'enablePassword'),
     ('description',),
-    ('comments',)
+    ('comments',),
+    ('id',),
+    ('credential_type', 'credentialType')
 )
 
 
@@ -37,6 +39,7 @@ def main():
 
     argument_spec = {
         'config': dict(type='list', elements='dict', options=config_spec),
+        'update_password': dict(choices=['always', 'on_create'], default='always'),
         'state': dict(choices=['present', 'absent'], default='present')
     }
 
@@ -77,7 +80,7 @@ def main():
             # to the config_object.  If a match is found it will be set to
             # matched_object otherwise matched_object will be None
             match_rule = objects.matchattr('username')
-            matched_object = objects.match(config_object, api_objects, ('username',))
+            matched_object = objects.match(config_object, api_objects, (match_rule,))
 
             # If matched_object is None, there was no matching api_object found
             # in the list.  If the state param is set to present, flag the
@@ -96,16 +99,26 @@ def main():
             elif matched_object:
                 obj = {}
                 for field in config_object._fields:
-                    value = getattr(config_object, field)
-                    if value is not None and value != getattr(matched_object, field):
-                        obj[key] = value
+                    if field not in ('password', 'enable_password'):
+                        value = getattr(config_object, field)
+                        tmp = CONFIG_TO_API_MAP.get(field)
+                        field = tmp.mapped_key if tmp else field
+                        if value is not None and value != getattr(matched_object, field):
+                            obj[field] = value
+
+                if module.params['update_password'] == 'always':
+                    obj['password'] = config_object.password
+                    obj['enable_password'] = config_object.enable_password
 
                 if obj:
                     for key, value in iteritems(config_spec):
-                        if value['required'] is True and key not in obj:
-                            obj[key] = value
+                        if value.get('required') is True and key not in obj:
+                            obj[key] = getattr(matched_object, key)
 
-                    operations.put.append(ConfigObject(obj, obj))
+                    obj['id'] = matched_object.id
+                    obj['credential_type'] = 'GLOBAL'
+
+                    operations.put.append(objects.ConfigObject(obj, obj))
 
     url = '/dna/intent/api/v1/global-credential/cli'
     result.update({'operation': dict(added=[], removed=[], modified=[])})
@@ -125,7 +138,7 @@ def main():
                     data = objects.serialize(items, CONFIG_TO_API_MAP)
                     connection.put(url, data=data)
                 result['changed'] = True
-                result['operation']['added'].extend([item.username for item in items])
+                result['operation']['modified'].extend([item.username for item in items])
 
             elif method == 'delete':
                 for item in items:
