@@ -1,0 +1,5 @@
+---
+- name: configure device inventory
+  ciscodevnet.ansible_dnac.devices:
+    config: "{{ devices }}"
+    state: "{{ state | default(omit) }}"

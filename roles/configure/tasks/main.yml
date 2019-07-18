@@ -1,0 +1,10 @@
+---
+- name: include credentials configuration
+  include_tasks: "{{ role_path }}/includes/credentials.yaml"
+  when:
+    - credentials is defined
+
+- name: include device inventory configuration
+  include_tasks: "{{ role_path }}/includes/devices.yaml"
+  when:
+    - devices is defined
