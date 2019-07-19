@@ -130,9 +130,9 @@ def main():
                     for item in items:
                         data = objects.serialize(item, CONFIG_TO_API_MAP)
 
-                        if data['username'] and not data['password']:
+                        if data.get('username') and not data.get('password'):
                             module.fail_json(msg="missing required attribute `password` when `username` is specified")
-                        elif data['password'] and not data['username']:
+                        elif data.get('password') and not data.get('username'):
                             module.fail_json(msg="missing required attribute `username` when `password` is specified")
 
                         validate(module, data)
