@@ -39,7 +39,7 @@ def main():
 
     argument_spec = {
         'config': dict(type='list', elements='dict', options=config_spec),
-        'update_password': dict(choices=['always', 'on_create'], default='always'),
+        'update_password': dict(choices=['always', 'on-create'], default='always'),
         'state': dict(choices=['present', 'absent'], default='present')
     }
 
